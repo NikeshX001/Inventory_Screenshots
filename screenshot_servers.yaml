@@ -1,0 +1,97 @@
+name: 📷 ScreenShot Live Hosts (GoWitness)
+# Alt: 
+#MAX_RUNTIME: ~ 30-45 Mins (Per 1000 hosts)
+
+on:
+  workflow_dispatch: # Whenever manually run from actions-tab
+  schedule:
+    - cron: "15 13 * * *" #( 01:15 PM UTC --> 07:00 PM Evening )
+#------------------------------------------------------------------------------------#  
+env:
+  # DO NOT MODIFY ANYTHING ELSE
+  INVENTORY_REPO_USER: "${{ secrets.INVENTORY_REPO_USER }}"
+  INVENTORY_REPO_TOKEN: "${{ secrets.INVENTORY_REPO_TOKEN }}"
+#------------------------------------------------------------------------------------#
+jobs:
+  Shoot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 69696969696969  
+    permissions:
+      contents: write
+      
+    steps:        
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: main  
+
+      - name: Install Coreutils
+        run: |
+          # Presets
+          set -x ; set +e
+          #--------------#
+          sudo apt update -y
+          sudo apt install coreutils curl dos2unix fdupes jq moreutils wget -y
+          pip install ansi2txt
+          # Do again, sometimes fails
+          sudo apt install coreutils curl fdupes dos2unix jq moreutils wget -y
+          pip install ansi2txt
+          # For TG BOT Notifs
+          pip install apprise 
+          pip install apprise 2>/dev/null
+          # For neofetch
+          pip install archey4
+          pip install archey4 2>/dev/null
+        continue-on-error: true
+      
+      # Chrome is preinstalled
+      # - name: Install Chrome
+      #   run: |
+      #     # Presets
+      #     set -x ; set +e
+      #     #--------------#
+      #     wget "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" -O "/tmp/chrome.deb"
+      #     sudo apt install "/tmp/chrome.deb" -y
+      #     sudo apt update -y && sudo apt upgrade -y
+      #   continue-on-error: false
+
+      - name: Install eget
+        run: |
+          # Presets
+          set -x ; set +e
+          #--------------#
+          # eget for bins
+          sudo wget "https://raw.githubusercontent.com/Azathothas/Toolpacks/main/x86_64/eget" -O "/usr/local/bin/eget"
+          sudo chmod +xwr "/usr/local/bin/eget"
+        continue-on-error: false
+
+      - name: Install Deps
+        run: |
+          # Presets
+          set -x ; set +e
+          #--------------#
+          #anew
+          sudo eget "https://raw.githubusercontent.com/Azathothas/Toolpacks/main/x86_64/anew" --to "/usr/local/bin/anew" ; anew -h
+          #gowitness
+          sudo eget "https://raw.githubusercontent.com/Azathothas/Toolpacks/main/x86_64/gowitness" --to "/usr/local/bin/gowitness" ; gowitness -h
+          #httpx
+          sudo eget "https://raw.githubusercontent.com/Azathothas/Toolpacks/main/x86_64/httpx" --to "/usr/local/bin/httpx" ; httpx -h
+          #yq
+          sudo eget "https://raw.githubusercontent.com/Azathothas/Toolpacks/main/x86_64/yq" --to "/usr/local/bin/yq" ; sudo chmod +xwr "/usr/local/bin/yq" ; yq -h
+        continue-on-error: true
+     
+      - name: Download & Run 
+        run: |
+          # Presets
+          set -x ; set +e
+          #--------------#
+          # Download
+          curl -qfsSL "https://$INVENTORY_REPO_USER:$INVENTORY_REPO_TOKEN@raw.githubusercontent.com/Azathothas/Inventory/main/.github/scripts/screenshot_servers.sh" -o "./screenshot_servers.sh"
+          # Dos2unix
+          dos2unix "./screenshot_servers.sh"
+          # chmod +xwr
+          sudo chmod +xwr "./screenshot_servers.sh"
+          # Run
+          # Always run with STD_OUT + STD_IN >/dev/null
+          bash "./screenshot_servers.sh" >/dev/null 2>&1
+        continue-on-error: true
